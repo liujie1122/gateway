@@ -1,0 +1,60 @@
+server:
+  port: 10011
+spring:
+  application:
+    name: gateway
+# 日志文件相关配置
+logging:
+  file: ./log/zuul-gateway.log
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${server.port}
+    prefer-ip-address: true  # 是否显示ip前缀
+#    ip-address: 192.168.1.249
+#    ip-address: 192.168.1.219
+  client:
+    service-url:
+      defaultZone: http://localhost:10086/eureka
+#      defaultZone: http://192.168.1.249:10086/eureka
+#    registry-fetch-interval-seconds: 5
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+
+zuul:
+  host:
+    socket-timeout-millis: 6000000
+    connect-timeout-millis: 6000000
+#  prefix: /api # 添加路由前缀
+  retryable: true
+  routes:
+    liujie-service: /liujie/** # 将微服务liujie-service映射到/liujie/**
+  ignored-patterns: /upload/**  # 被忽略的路由地址
+#zuul:
+#需要忽略的头部信息，不在传播到其他服务
+  sensitive-headers: Access-Control-Allow-Origin
+  ignored-headers: Access-Control-Allow-Origin,H-APP-Id,Token,APPToken
+
+#ribbon负载均衡
+ribbon:
+  ConnectTimeout: 60000 # 连接超时时间(ms)
+  ReadTimeout: 60000 # 通信超时时间(ms)
+  OkToRetryOnAllOperations: true # 是否对所有操作重试
+  MaxAutoRetriesNextServer: 1 # 同一服务不同实例的重试次数
+  MaxAutoRetries: 1 # 同一实例的重试次数
+
+
+#  hystrix熔断
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 600000 # 熔断超时时长：10000ms
+#            timeoutInMillisecond: 60000 # 熔断超时时长：10000ms
